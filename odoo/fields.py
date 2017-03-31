@@ -1654,6 +1654,11 @@ class Selection(Field):
         model method, or a method name.
     :param selection_add: provides an extension of the selection in the case
         of an overridden field. It is a list of pairs (``value``, ``string``).
+    :param selection_add_before: provides an extension of the selection in the
+        case of an overridden field having to add a value in a specific posi-
+        tion. It is a list of double pairs as :
+        ((``value``, ``string``), ``next_value``).
+
 
     The attribute ``selection`` is mandatory except in the case of
     :ref:`related fields <field-related>` or :ref:`field extensions
@@ -1698,6 +1703,15 @@ class Selection(Field):
                 # use an OrderedDict to update existing values
                 selection_add = field.args['selection_add']
                 self.selection = OrderedDict(self.selection + selection_add).items()
+            if 'selection_add_before' in field.args:
+                new_selection = []
+                selection_add_before = field.args['selection_add_before']
+                for to_add in selection_add_before:
+                    for s_key, s_name in self.selection:
+                        if to_add[1] == s_key:
+                            new_selection.append(to_add[0])
+                        new_selection.append((s_key, s_name))
+                self.selection = new_selection
 
     def _description_selection(self, env):
         """ return the selection list (pairs (value, label)); labels are
